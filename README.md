@@ -46,8 +46,10 @@ Roommate bill splitting
 
 
 **Clone Repo**
+
 git clone https://github.com/yourusername/expense-settlement.git
 cd expense-settlement
 
 **Run Streamlit app**
+
 streamlit run app.py
