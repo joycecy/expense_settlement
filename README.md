@@ -1,4 +1,4 @@
-Overview:
+**Overview:**
 
 The Expense Settlement App is an interactive Python web application built with Streamlit to simplify group expense tracking and settlement.
 
@@ -6,7 +6,7 @@ It allows users to record shared expenses, assign payers and participants, calcu
 
 
 
-Features:
+**Features:**
 
 Dynamic Form Inputs: Add, edit, and delete receipts with multiple items, taxes, and tips.
 
@@ -22,7 +22,7 @@ Interactive UI: Built with Streamlit for a lightweight, browser-based workflow.
 
 
 
-How It Works:
+**How It Works:**
 
 Add participants and select the currency.
 
@@ -34,7 +34,7 @@ Reset fields or the full session as needed — without breaking the currency log
 
 
 
-Example Use Cases:
+**Example Use Cases:**
 
 Group trips or vacations
 
@@ -45,9 +45,9 @@ Event or team budget tracking
 Roommate bill splitting
 
 
-# Clone repository
+**Clone Repo**
 git clone https://github.com/yourusername/expense-settlement.git
 cd expense-settlement
 
-# Run Streamlit app
+**Run Streamlit app**
 streamlit run app.py
