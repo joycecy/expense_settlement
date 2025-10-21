@@ -147,20 +147,20 @@ else:
     # If not editing, use existing session value or default to 1
     temp_num_items = st.session_state.get("num_items", 1)
 
-# Handle 'Reset all' (clears everything) — keeps currency handled elsewhere
-if st.session_state.get("reset_all_now", False):
-    st.session_state.form_id += 1
-    st.session_state.reset_all_now = False
-    temp_num_items = 1
-    # Clear only the relevant fields
-    for key in ["payer", "tax", "tip"]:
-        if key in st.session_state:
-            del st.session_state[key]
+# # Handle 'Reset all' (clears everything) — keeps currency handled elsewhere
+# if st.session_state.get("reset_all_now", False):
+#     st.session_state.form_id += 1
+#     st.session_state.reset_all_now = False
+#     temp_num_items = 1
+#     # Clear only the relevant fields
+#     for key in ["payer", "tax", "tip"]:
+#         if key in st.session_state:
+#             del st.session_state[key] 
 
 # -----------------------
 # Controls: number of items + reset buttons
 # -----------------------
-col1, col2, col3 = st.columns([3, 3, 3])
+col1, col2 = st.columns([3, 3])
 
 # Number of items input (uses temp_num_items, never assign st.session_state.num_items yet)
 with col1:
@@ -172,7 +172,8 @@ with col1:
     )
 
 with col2:
-    if st.button("🔄 Reset items (clear fields ONLY)"):
+    st.markdown("<div style='margin-top:23px'></div>", unsafe_allow_html=True)
+    if st.button("🔄 Reset to clear items"):
         form_prefix = f"f{st.session_state.form_id}_"
         st.session_state.form_id += 1
 
@@ -186,10 +187,10 @@ with col2:
         st.rerun()
 
 # Reset all (clears everything, including num_items)
-with col3:
-    if st.button("🔁 Reset all (clear fields AND reset count)"):
-        st.session_state.reset_all_now = True
-        st.rerun()
+# with col3:
+#     if st.button("🔁 Reset all (clear fields AND reset count)"):
+#         st.session_state.reset_all_now = True
+#         st.rerun()
 
 # -----------------------
 # Add Receipt form
