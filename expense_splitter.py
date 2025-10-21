@@ -89,9 +89,12 @@ else:
 # -----------------------
 if edit_receipt is not None:
     default_payer = edit_receipt.get("payer", "")
-    default_currency = edit_receipt["items"][0]["currency"] if edit_receipt.get("items") else st.session_state.currency_choice
-    default_tax = edit_receipt.get("tax", 0.0)
-    default_tip = edit_receipt.get("tip", 0.0)
+    default_currency = edit_receipt["items"][0].get("currency", "USD") if edit_receipt.get("items") else "USD"
+    # Use foreign tax/tip if non-USD
+    default_tax = edit_receipt.get("tax_foreign" if default_currency != "USD" else "tax", 0.0)
+    default_tip = edit_receipt.get("tip_foreign" if default_currency != "USD" else "tip", 0.0)
+    # Persist this currency choice for the session
+    st.session_state.currency_choice = default_currency
 else:
     default_payer = ""
     default_currency = st.session_state.currency_choice
@@ -200,12 +203,25 @@ default_tip = st.session_state.get("tip", 0.0)
 default_currency = st.session_state.get("currency_choice", "USD")
 
 with st.form("add_receipt_form", clear_on_submit=False):
+
     # Pre-fill if editing
     if edit_receipt is not None:
         default_payer = edit_receipt.get("payer", "")
-        default_currency = edit_receipt["items"][0]["currency"] if edit_receipt.get("items") else st.session_state.currency_choice
-        default_tax = edit_receipt.get("tax", 0.0)
-        default_tip = edit_receipt.get("tip", 0.0)
+        default_currency = (
+            edit_receipt["items"][0]["currency"]
+            if edit_receipt.get("items")
+            else st.session_state.currency_choice
+        )
+        # Tax & tip in the same currency as receipt
+        if default_currency == "USD":
+            default_tax = edit_receipt.get("tax", 0.0)
+            default_tip = edit_receipt.get("tip", 0.0)
+        else:
+            default_tax = edit_receipt.get("tax_foreign", 0.0)
+            default_tip = edit_receipt.get("tip_foreign", 0.0)
+
+        # Force form currency choice to match receipt
+        currency_choice = default_currency
     else:
         default_payer = ""
         default_currency = st.session_state.get("currency_choice", "USD")
@@ -245,11 +261,26 @@ with st.form("add_receipt_form", clear_on_submit=False):
     items = []
     for i in range(num_items):
         st.markdown(f"**Item #{i+1}**")
-        name = st.text_input(f"Item #{i+1} name", key=f"{form_prefix}name_{i}", value="")
+        if edit_receipt is not None and i < len(edit_receipt["items"]):
+            existing_item = edit_receipt["items"][i]
+            default_name = existing_item["name"]
+            default_shared = existing_item["shared_with"]
+
+            # ✅ Detect whether the form currency matches the item currency
+            if currency_choice == "USD":
+                default_price = existing_item["price_usd"]
+            else:
+                default_price = existing_item["price_foreign"]
+
+        else:
+            default_name = ""
+            default_price = 0.0
+            default_shared = []
+
+        name = st.text_input(f"Item #{i+1} name", key=f"{form_prefix}name_{i}", value=default_name)
         price = st.number_input(f"Item #{i+1} amount", min_value=0.0, format="%.2f",
-                                key=f"{form_prefix}price_{i}", value=0.0)
+                        key=f"{form_prefix}price_{i}", value=default_price)
         
-        # Convert item price to USD and foreign currency
         if currency_choice == "USD":
             price_usd = price
             price_foreign = price * conversion_rate
@@ -264,11 +295,12 @@ with st.form("add_receipt_form", clear_on_submit=False):
                 <span style="font-size:12px;"><i>"Shared with" field needs to include "payer" if the item is also split with payer.</i></span>
             </div>
             """, unsafe_allow_html=True
-        )        
+        ) 
 
         shared_list = st.multiselect(
             f"Item #{i+1} Shared with",
             options=st.session_state.participants,
+            default=default_shared,
             key=f"{form_prefix}shared_{i}"
         )
 
@@ -311,7 +343,7 @@ if submitted and payer and any(item["name"] for item in items):
     st.success("✅ Receipt saved!")
     
     # Clear payer, tax, tip after submit
-    for key in ["payer", "tax", "tip", "currency_choice"]:
+    for key in ["payer", "tax", "tip"]:
         if key in st.session_state:
             del st.session_state[key]
 
