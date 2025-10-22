@@ -463,12 +463,20 @@ if st.session_state.receipts:
         
         # Use price_foreign_display, tax_foreign_display, tip_foreign_display in the table
 
+        # Determine whether to show foreign column
+        show_foreign = receipt_currency != "USD" and foreign_currency.strip() != ""
+
         # --- Generate items table ---
         items_html = '<table style="width:100%; border-collapse: collapse;">'
         items_html += (
             f'<tr>'
             f'<th style="text-align:left; padding:4px;">Item</th>'
-            f'<th style="text-align:right; padding:4px;">Price ({foreign_currency})</th>'
+        )
+
+        if show_foreign:
+            items_html += f'<th style="text-align:right; padding:4px;">Price ({foreign_currency})</th>'
+
+        items_html += (
             f'<th style="text-align:right; padding:4px;">Price (USD)</th>'
             f'<th style="text-align:left; padding:4px;">Shared With</th>'
             f'</tr>'
@@ -478,7 +486,12 @@ if st.session_state.receipts:
             items_html += (
                 f'<tr>'
                 f'<td style="padding:4px;">{it["name"]}</td>'
-                f'<td style="padding:4px; text-align:right;">{it["price_foreign_display"]:.2f} {foreign_currency}</td>'
+            )
+
+            if show_foreign:
+                items_html += f'<td style="padding:4px; text-align:right;">{it["price_foreign_display"]:.2f} {foreign_currency}</td>'
+
+            items_html += (
                 f'<td style="padding:4px; text-align:right;">${it["price_usd"]:.2f}</td>'
                 f'<td style="padding:4px;">{", ".join(it["shared_with"])}</td>'
                 f'</tr>'
@@ -488,15 +501,26 @@ if st.session_state.receipts:
         items_html += (
             f'<tr>'
             f'<td style="padding:4px; font-style:italic;">Tax</td>'
-            f'<td style="padding:4px; text-align:right;">{tax_foreign_display:.2f} {foreign_currency}</td>'
+        )
+
+        if show_foreign:
+            items_html += f'<td style="padding:4px; text-align:right;">{tax_foreign_display:.2f} {foreign_currency}</td>'
+        
+        items_html += (
             f'<td style="padding:4px; text-align:right;">${r["tax"]:.2f}</td>'
             f'<td></td>'
             f'</tr>'
         )
+
         items_html += (
             f'<tr>'
             f'<td style="padding:4px; font-style:italic;">Tip</td>'
-            f'<td style="padding:4px; text-align:right;">{tip_foreign_display:.2f} {foreign_currency}</td>'
+        )
+
+        if show_foreign:
+            items_html += f'<td style="padding:4px; text-align:right;">{tip_foreign_display:.2f} {foreign_currency}</td>'
+        
+        items_html += (
             f'<td style="padding:4px; text-align:right;">${r["tip"]:.2f}</td>'
             f'<td></td>'
             f'</tr>'
@@ -509,7 +533,11 @@ if st.session_state.receipts:
         items_html += (
             f'<tr style="font-weight:bold; border-top:2px solid #ccc;">'
             f'<td>Total</td>'
-            f'<td style="text-align:right;">{receipt_total_foreign:.2f} {foreign_currency}</td>'
+        )
+        if show_foreign:
+            items_html += f'<td style="text-align:right;">{receipt_total_foreign:.2f} {foreign_currency}</td>'
+        
+        items_html += (
             f'<td style="text-align:right;">${receipt_total_usd:.2f}</td>'
             f'<td></td>'
             f'</tr>'
