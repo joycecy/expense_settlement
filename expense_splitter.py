@@ -5,6 +5,11 @@ import base64
 
 st.set_page_config(page_title="Expense Settlement", layout="centered")
 
+# Handle scroll to form after edit
+if st.session_state.get("scroll_to_form", False):
+    st.session_state.scroll_to_form = False
+    st.markdown("<script>window.location.href = '#receipt_form';</script>", unsafe_allow_html=True)
+
 # ----------------------------------
 # --- Full page background color
 # ----------------------------------
@@ -203,10 +208,23 @@ default_tax = st.session_state.get("tax", 0.0)
 default_tip = st.session_state.get("tip", 0.0)
 default_currency = st.session_state.get("currency_choice", "USD")
 
+# Anchor for jumping to the form
+st.markdown("<a name='receipt_form'></a>", unsafe_allow_html=True)
+
 with st.form("add_receipt_form", clear_on_submit=False):
 
     # Pre-fill if editing
     if edit_receipt is not None:
+        
+        st.markdown(
+            "<div style='background-color:#fff3cd; border:1px solid #ffeeba; "
+            "padding:10px; border-radius:8px; margin-bottom:10px;'>"
+            "✏️ <strong>Editing existing receipt...</strong> "
+            "Make changes and click <em>'Save Changes'</em> to save."
+            "</div>",
+            unsafe_allow_html=True
+        )
+
         default_payer = edit_receipt.get("payer", "")
         default_currency = (
             edit_receipt["items"][0]["currency"]
@@ -313,7 +331,7 @@ with st.form("add_receipt_form", clear_on_submit=False):
             "shared_with": shared_list
         })
 
-    submitted = st.form_submit_button("Add Receipt")
+    submitted = st.form_submit_button("Save Changes" if edit_receipt is not None else "Add Receipt")
 
 
 # -----------------------
@@ -427,16 +445,30 @@ if st.session_state.receipts:
             r["tip_foreign"] = r.get("tip", 0.0) * conversion_rate
 
     for idx, r in enumerate(st.session_state.receipts):
-        # Determine receipt currency
         receipt_currency = r["items"][0]["currency"] if r["items"] else "USD"
-        currency_symbol = foreign_currency if receipt_currency != "USD" else "USD"
+    
+        # Dynamically calculate foreign values
+        for it in r["items"]:
+            if receipt_currency == "USD":
+                it["price_foreign_display"] = it["price_usd"] * conversion_rate
+            else:
+                it["price_foreign_display"] = it["price_usd"] / conversion_rate if conversion_rate > 0 else 0
+        
+        if receipt_currency == "USD":
+            tax_foreign_display = r["tax"] * conversion_rate
+            tip_foreign_display = r["tip"] * conversion_rate
+        else:
+            tax_foreign_display = r["tax_foreign"]
+            tip_foreign_display = r["tip_foreign"]
+        
+        # Use price_foreign_display, tax_foreign_display, tip_foreign_display in the table
 
         # --- Generate items table ---
         items_html = '<table style="width:100%; border-collapse: collapse;">'
         items_html += (
             f'<tr>'
             f'<th style="text-align:left; padding:4px;">Item</th>'
-            f'<th style="text-align:right; padding:4px;">Price ({currency_symbol})</th>'
+            f'<th style="text-align:right; padding:4px;">Price ({foreign_currency})</th>'
             f'<th style="text-align:right; padding:4px;">Price (USD)</th>'
             f'<th style="text-align:left; padding:4px;">Shared With</th>'
             f'</tr>'
@@ -446,7 +478,7 @@ if st.session_state.receipts:
             items_html += (
                 f'<tr>'
                 f'<td style="padding:4px;">{it["name"]}</td>'
-                f'<td style="padding:4px; text-align:right;">{it["price_foreign"]:.2f} {currency_symbol}</td>'
+                f'<td style="padding:4px; text-align:right;">{it["price_foreign_display"]:.2f} {foreign_currency}</td>'
                 f'<td style="padding:4px; text-align:right;">${it["price_usd"]:.2f}</td>'
                 f'<td style="padding:4px;">{", ".join(it["shared_with"])}</td>'
                 f'</tr>'
@@ -456,7 +488,7 @@ if st.session_state.receipts:
         items_html += (
             f'<tr>'
             f'<td style="padding:4px; font-style:italic;">Tax</td>'
-            f'<td style="padding:4px; text-align:right;">{r["tax_foreign"]:.2f} {currency_symbol}</td>'
+            f'<td style="padding:4px; text-align:right;">{tax_foreign_display:.2f} {foreign_currency}</td>'
             f'<td style="padding:4px; text-align:right;">${r["tax"]:.2f}</td>'
             f'<td></td>'
             f'</tr>'
@@ -464,20 +496,20 @@ if st.session_state.receipts:
         items_html += (
             f'<tr>'
             f'<td style="padding:4px; font-style:italic;">Tip</td>'
-            f'<td style="padding:4px; text-align:right;">{r["tip_foreign"]:.2f} {currency_symbol}</td>'
+            f'<td style="padding:4px; text-align:right;">{tip_foreign_display:.2f} {foreign_currency}</td>'
             f'<td style="padding:4px; text-align:right;">${r["tip"]:.2f}</td>'
             f'<td></td>'
             f'</tr>'
         )
 
         # --- Total row ---
-        receipt_total_foreign = sum(it["price_foreign"] for it in r["items"]) + r["tax_foreign"] + r["tip_foreign"]
+        receipt_total_foreign = sum(it["price_foreign_display"] for it in r["items"]) + tax_foreign_display + tip_foreign_display
         receipt_total_usd = sum(it["price_usd"] for it in r["items"]) + r["tax"] + r["tip"]
 
         items_html += (
             f'<tr style="font-weight:bold; border-top:2px solid #ccc;">'
             f'<td>Total</td>'
-            f'<td style="text-align:right;">{receipt_total_foreign:.2f} {currency_symbol}</td>'
+            f'<td style="text-align:right;">{receipt_total_foreign:.2f} {foreign_currency}</td>'
             f'<td style="text-align:right;">${receipt_total_usd:.2f}</td>'
             f'<td></td>'
             f'</tr>'
@@ -504,6 +536,7 @@ if st.session_state.receipts:
             if st.button("✏️ Edit", key=f"edit_{idx}"):
                 st.session_state.form_id += 1
                 st.session_state.edit_receipt = idx
+                st.session_state.scroll_to_form = True  # 👈 flag for scroll
                 st.rerun()
 
 
