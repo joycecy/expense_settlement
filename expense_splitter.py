@@ -120,7 +120,7 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-foreign_currency = st.text_input("Foreign currency code (e.g., EUR, JPY)", value="EUR")
+foreign_currency = st.text_input("Foreign currency code (e.g., EUR, JPY)", value=" ")
 conversion_rate = st.number_input(
     f"Conversion rate (1 USD = ? {foreign_currency})",
     min_value=0.0001,
