@@ -452,7 +452,7 @@ if st.session_state.receipts:
             if receipt_currency == "USD":
                 it["price_foreign_display"] = it["price_usd"] * conversion_rate
             else:
-                it["price_foreign_display"] = it["price_usd"] / conversion_rate if conversion_rate > 0 else 0
+                it["price_foreign_display"] = it["price_foreign"] 
         
         if receipt_currency == "USD":
             tax_foreign_display = r["tax"] * conversion_rate
