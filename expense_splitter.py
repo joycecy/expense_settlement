@@ -248,7 +248,25 @@ with st.form("add_receipt_form", clear_on_submit=False):
         default_tip = 0.0
 
     st.markdown("<span style='font-size:0.875rem; font-weight:400;'>Payer Name <span style='color:red;'>*</span></span>", unsafe_allow_html=True)
-    payer = st.text_input(label="Payer Name", value=default_payer, key=f"{form_prefix}payer", label_visibility="collapsed")
+    payer_options = ["(Choose a Participant)"] + st.session_state.participants
+
+    # Determine default index (so reset can show placeholder)
+    if default_payer in st.session_state.participants:
+        default_index = payer_options.index(default_payer)
+    else:
+        default_index = 0  # 0 = "Choose an option"
+
+    payer = st.selectbox(
+        label="Payer Name",
+        options=payer_options,
+        index=default_index,
+        key=f"{form_prefix}payer",
+        label_visibility="collapsed"
+    )
+
+    # Treat placeholder as empty (for validation)
+    if payer == "Choose an option":
+        payer = ""
 
     # Use a manual default index based on session
     default_currency_choice = st.session_state.get("currency_choice", "USD")
