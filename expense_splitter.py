@@ -29,9 +29,8 @@ st.markdown(
         opacity: 1 !important;
     }
 
-    /* Radio buttons / select boxes */
-    div.stRadio > div > label, 
-    div.stSelectbox > div > div {
+    /* Radio button labels */
+    div.stRadio > div > label {
         color: #000 !important;
     }
 
