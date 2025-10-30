@@ -11,27 +11,28 @@ st.set_page_config(page_title="Expense Settlement", layout="centered")
 st.markdown(
     """
     <style>
-    /* Form field labels and markdown */
-    .stMarkdown, .stTextInput label, .stNumberInput label {
-        color: #000 !important;  /* black text for all labels */
-    }
-
-    /* Payer / shared with selectboxes */
-    .stSelectbox label {
-        color: #000 !important;
-    }
-
-    /* Input boxes */
-    div.stTextInput > div > input, 
+    /* Input boxes (text & number) */
+    div.stTextInput > div > input,
     div.stNumberInput > div > input {
-        background-color: #fff !important; /* white background */
-        color: #000 !important;            /* black text */
+        background-color: #fff !important;
+        color: #000 !important;
     }
 
     /* Placeholder text */
     ::placeholder {
-        color: #888 !important;            /* gray placeholder */
-        opacity: 1 !important;             /* ensure visibility */
+        color: #888 !important;
+        opacity: 1 !important;
+    }
+
+    /* Radio buttons / select boxes */
+    div.stRadio > div > label, 
+    div.stSelectbox > div > div {
+        color: #000 !important;
+    }
+
+    /* Markdown labels (existing) */
+    .stMarkdown, .stTextInput label, .stNumberInput label {
+        color: #000 !important;  
     }
     </style>
     """,
