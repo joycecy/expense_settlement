@@ -11,20 +11,15 @@ st.set_page_config(page_title="Expense Settlement", layout="centered")
 st.markdown(
     """
     <style>
-    /* Subheaders (like 'Currency Conversion') */
-    .stSubheader {
+    /* Force all h1, h2, h3, h4, h5, h6 (including subheaders) to black */
+    h1, h2, h3, h4, h5, h6 {
         color: #000 !important;
     }
 
-    /* Text input / number input boxes */
+    /* Input boxes (text & number) */
     div.stTextInput > div > input,
     div.stNumberInput > div > input {
         background-color: #fff !important;
-        color: #000 !important;
-    }
-
-    /* Radio buttons labels */
-    div.stRadio > div > label {
         color: #000 !important;
     }
 
@@ -32,6 +27,17 @@ st.markdown(
     ::placeholder {
         color: #888 !important;
         opacity: 1 !important;
+    }
+
+    /* Radio buttons / select boxes */
+    div.stRadio > div > label, 
+    div.stSelectbox > div > div {
+        color: #000 !important;
+    }
+
+    /* Markdown labels (existing) */
+    .stMarkdown, .stTextInput label, .stNumberInput label {
+        color: #000 !important;  
     }
     </style>
     """,
