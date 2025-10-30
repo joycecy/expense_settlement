@@ -5,6 +5,39 @@ import base64
 
 st.set_page_config(page_title="Expense Settlement", layout="centered")
 
+# -----------------------
+# Custom CSS to fix dark mode
+# -----------------------
+st.markdown(
+    """
+    <style>
+    /* Form field labels and markdown */
+    .stMarkdown, .stTextInput label, .stNumberInput label {
+        color: #000 !important;  /* black text for all labels */
+    }
+
+    /* Payer / shared with selectboxes */
+    .stSelectbox label {
+        color: #000 !important;
+    }
+
+    /* Input boxes */
+    div.stTextInput > div > input, 
+    div.stNumberInput > div > input {
+        background-color: #fff !important; /* white background */
+        color: #000 !important;            /* black text */
+    }
+
+    /* Placeholder text */
+    ::placeholder {
+        color: #888 !important;            /* gray placeholder */
+        opacity: 1 !important;             /* ensure visibility */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Handle scroll to form after edit
 if st.session_state.get("scroll_to_form", False):
     st.session_state.scroll_to_form = False
