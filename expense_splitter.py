@@ -29,11 +29,6 @@ st.markdown(
         opacity: 1 !important;
     }
 
-    /* Radio button labels */
-    div.stRadio > div > label {
-        color: #000 !important;
-    }
-
     /* Markdown labels (existing) */
     .stMarkdown, .stTextInput label, .stNumberInput label {
         color: #000 !important;  
@@ -310,11 +305,13 @@ with st.form("add_receipt_form", clear_on_submit=False):
     default_currency_choice = st.session_state.get("currency_choice", "USD")
 
     # Render radio WITHOUT using key="currency_choice" — avoids auto-reset on rerun
+    st.markdown("<span style='color:black; font-weight:400;'>Currency for this receipt</span>", unsafe_allow_html=True)
     currency_choice = st.radio(
-        "Currency for this receipt",
+        "",
         ["USD", foreign_currency],
         index=0 if default_currency_choice == "USD" else 1,
-        horizontal=True
+        horizontal=True,
+        label_visibility="collapsed"
     )
 
     # Manually persist selected currency
