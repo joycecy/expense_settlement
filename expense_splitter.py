@@ -247,8 +247,8 @@ with st.form("add_receipt_form", clear_on_submit=False):
         default_tax = 0.0
         default_tip = 0.0
 
-
-    payer = st.text_input("Payer Name", value=default_payer, key=f"{form_prefix}payer")
+    st.markdown("<span style='font-size:0.875rem; font-weight:400;'>Payer Name <span style='color:red;'>*</span></span>", unsafe_allow_html=True)
+    payer = st.text_input(label="Payer Name", value=default_payer, key=f"{form_prefix}payer", label_visibility="collapsed")
 
     # Use a manual default index based on session
     default_currency_choice = st.session_state.get("currency_choice", "USD")
@@ -296,9 +296,12 @@ with st.form("add_receipt_form", clear_on_submit=False):
             default_price = 0.0
             default_shared = []
 
-        name = st.text_input(f"Item #{i+1} name", key=f"{form_prefix}name_{i}", value=default_name)
-        price = st.number_input(f"Item #{i+1} amount", min_value=0.0, format="%.2f",
-                        key=f"{form_prefix}price_{i}", value=default_price)
+        st.markdown(f"<span style='font-size:0.875rem; font-weight:400;'>Item #{i+1} name <span style='color:red'>*</span></span>", unsafe_allow_html=True)
+        name = st.text_input("", key=f"{form_prefix}name_{i}", value=default_name, label_visibility="collapsed")
+
+        st.markdown(f"<span style='font-size:0.875rem; font-weight:400;'>Item #{i+1} amount <span style='color:red'>*</span></span>", unsafe_allow_html=True)
+        price = st.number_input("", min_value=0.0, format="%.2f",
+                                key=f"{form_prefix}price_{i}", value=default_price, label_visibility="collapsed")
         
         if currency_choice == "USD":
             price_usd = price
@@ -316,12 +319,9 @@ with st.form("add_receipt_form", clear_on_submit=False):
             """, unsafe_allow_html=True
         ) 
 
-        shared_list = st.multiselect(
-            f"Item #{i+1} Shared with",
-            options=st.session_state.participants,
-            default=default_shared,
-            key=f"{form_prefix}shared_{i}"
-        )
+        st.markdown(f"<span style='font-size:0.875rem; font-weight:400;'>Item #{i+1} Shared with <span style='color:red'>*</span></span>", unsafe_allow_html=True)
+        shared_list = st.multiselect("", options=st.session_state.participants,
+                                     default=default_shared, key=f"{form_prefix}shared_{i}", label_visibility="collapsed")
 
         items.append({
             "name": name,
@@ -335,39 +335,60 @@ with st.form("add_receipt_form", clear_on_submit=False):
 
 
 # -----------------------
-# On submit
+# On submit with required field validation
 # -----------------------
-if submitted and payer and any(item["name"] for item in items):
-    if "edit_receipt" in st.session_state:
-        # Overwrite the edited receipt
-        idx = st.session_state.pop("edit_receipt")
-        st.session_state.receipts[idx] = {
-            "payer": payer,
-            "items": items,
-            "tax": tax_usd,
-            "tip": tip_usd,
-            "tax_foreign": tax_foreign,
-            "tip_foreign": tip_foreign
-        }
+if submitted:
+    errors = []
+
+    # Validate payer
+    if not payer.strip():
+        errors.append("Payer name is required.")
+
+    # Validate items
+    for i, item in enumerate(items, start=1):
+        if not item["name"].strip():
+            errors.append(f"Item #{i} name is required.")
+        if item["price_usd"] <= 0:
+            errors.append(f"Item #{i} amount must be greater than 0.")
+        if not item["shared_with"]:
+            errors.append(f"Item #{i} 'Shared with' must include at least one person.")
+
+    # If there are any validation errors, show them
+    if errors:
+        st.error("🚫 Please fix the following before saving:")
+        for e in errors:
+            st.write(f"- {e}")
     else:
-        st.session_state.receipts.append({
-            "payer": payer,
-            "items": items,
-            "tax": tax_usd,
-            "tip": tip_usd,
-            "tax_foreign": tax_foreign,
-            "tip_foreign": tip_foreign
-        })
+        # ✅ All required fields filled — proceed to save
+        if "edit_receipt" in st.session_state:
+            idx = st.session_state.pop("edit_receipt")
+            st.session_state.receipts[idx] = {
+                "payer": payer,
+                "items": items,
+                "tax": tax_usd,
+                "tip": tip_usd,
+                "tax_foreign": tax_foreign,
+                "tip_foreign": tip_foreign,
+            }
+            st.success("✅ Changes saved!")
+        else:
+            st.session_state.receipts.append({
+                "payer": payer,
+                "items": items,
+                "tax": tax_usd,
+                "tip": tip_usd,
+                "tax_foreign": tax_foreign,
+                "tip_foreign": tip_foreign,
+            })
+            st.success("✅ Receipt added!")
 
-    st.success("✅ Receipt saved!")
-    
-    # Clear payer, tax, tip after submit
-    for key in ["payer", "tax", "tip"]:
-        if key in st.session_state:
-            del st.session_state[key]
+        # Clear some temporary fields
+        for key in ["payer", "tax", "tip"]:
+            if key in st.session_state:
+                del st.session_state[key]
 
-    st.session_state.form_id += 1
-    st.rerun()
+        st.session_state.form_id += 1
+        st.rerun()
 
 # -----------------------
 # Settlement calculation
@@ -464,7 +485,7 @@ if st.session_state.receipts:
         # Use price_foreign_display, tax_foreign_display, tip_foreign_display in the table
 
         # Determine whether to show foreign column
-        show_foreign = receipt_currency != "USD" and foreign_currency.strip() != ""
+        show_foreign = foreign_currency.strip() != ""
 
         # --- Generate items table ---
         items_html = '<table style="width:100%; border-collapse: collapse;">'
