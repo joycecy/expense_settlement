@@ -318,8 +318,11 @@ with st.form("add_receipt_form", clear_on_submit=False):
     st.session_state.currency_choice = currency_choice
 
     # --- Tax and Tip inputs ---
-    tax_val = st.number_input("Tax Amount", min_value=0.0, format="%.2f", value=default_tax, key=f"{form_prefix}tax")
-    tip_val = st.number_input("Tip Amount", min_value=0.0, format="%.2f", value=default_tip, key=f"{form_prefix}tip")
+    tax_val = st.number_input("Tax Amount", min_value=0.0, format="%.2f", value=None, placeholder="0.00", key=f"{form_prefix}tax")
+    tip_val = st.number_input("Tip Amount", min_value=0.0, format="%.2f", value=None, placeholder="0.00", key=f"{form_prefix}tip")
+    
+    tax_val = tax_val or 0.0
+    tip_val = tip_val or 0.0
 
     # Convert to USD if foreign
     if currency_choice == "USD":
