@@ -357,7 +357,9 @@ with st.form("add_receipt_form", clear_on_submit=False):
 
         st.markdown(f"<span style='font-size:0.875rem; font-weight:400;'>Item #{i+1} amount <span style='color:red'>*</span></span>", unsafe_allow_html=True)
         price = st.number_input("", min_value=0.0, format="%.2f",
-                                key=f"{form_prefix}price_{i}", value=default_price, label_visibility="collapsed")
+                                key=f"{form_prefix}price_{i}", value=None if edit_receipt is None else default_price, placeholder="0.00", label_visibility="collapsed")
+        
+        price = price or 0.0
         
         if currency_choice == "USD":
             price_usd = price
