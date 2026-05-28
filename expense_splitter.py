@@ -4,6 +4,7 @@ import pandas as pd
 import base64
 
 st.set_page_config(page_title="Expense Settlement", layout="centered")
+st.write("Pandas version:", pd.__version__)
 
 # -----------------------
 # Custom CSS to fix dark mode
