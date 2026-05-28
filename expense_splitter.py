@@ -4,7 +4,6 @@ import pandas as pd
 import base64
 
 st.set_page_config(page_title="Expense Settlement", layout="centered")
-st.write("Pandas version:", pd.__version__)
 
 # -----------------------
 # Custom CSS to fix dark mode
@@ -669,9 +668,9 @@ if st.session_state.receipts:
     } for p in people])
     def highlight_net(v):
         return "color: green; font-weight:bold;" if v>0 else ("color: red; font-weight:bold;" if v<0 else "")
-    st.dataframe(df.style.applymap(highlight_net, subset=["Net Balance"])
-                 .format({"Paid":"${:.2f}","Owes":"${:.2f}","Net Balance":"${:.2f}"}), use_container_width=True)
-
+    st.dataframe(df.style.map(highlight_net, subset=["Net Balance"])
+                 .format({"Paid": "${:.2f}","Owes": "${:.2f}","Net Balance": "${:.2f}"}), use_container_width=True)
+    
     st.subheader("💸 Settlement Summary")
     
     st.markdown(
